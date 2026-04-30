@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center">
+        <h3>Admin Dashboard</h3>
+        <button class="btn btn-danger" onclick="logout()">Logout</button>
+    </div>
+    
+
+    <h5 id="welcome"></h5>
+
+    <hr>
+<div class="row mb-3">
+
+    <div class="col-md-3">
+        <div class="card p-3 text-center">
+            <h6>Total</h6>
+            <h4 id="totalTasks">0</h4>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3 text-center">
+            <h6>Todo</h6>
+            <h4 id="todoTasks">0</h4>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3 text-center">
+            <h6>In Progress</h6>
+            <h4 id="inProgressTasks">0</h4>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3 text-center">
+            <h6>Done</h6>
+            <h4 id="doneTasks">0</h4>
+        </div>
+    </div>
+
+</div>
+
+<div class="card p-3 mb-3">
+    <h5>Tasks Per User</h5>
+    <ul id="tasksPerUserList"></ul>
+</div>
+    <!-- CREATE PROJECT -->
+    <div class="card p-3 mb-4">
+        <h5>Create Project</h5>
+
+        <input id="projectName" class="form-control mb-2" placeholder="Project Name">
+        <input id="projectDesc" class="form-control mb-2" placeholder="Description">
+
+        <button class="btn btn-warning" onclick="createProject()">Create Project</button>
+    </div>
+
+    <!-- PROJECT LIST -->
+    <div class="row" id="projectList"></div>
+
+</div>
+
+
+<script>
+
+
+let allUsers = [];
+const BASE = "http://localhost:8080";
+const user = JSON.parse(localStorage.getItem("user"));
+
+if (!user || user.role !== "ADMIN") {
+    window.location.href = "auth.html";
+}
+
+welcome.innerText = "Welcome " + user.name;
+
+
+function logout() {
+    localStorage.removeItem("user");
+    window.location.href = "auth.html";
+}
+
+function loadProjects() {
+	fetch(BASE + "/projects/" + user.id)
+        .then(res => res.json())
+        .then(data => {
+
+            projectList.innerHTML = "";
+
+            data.forEach(p => {
+
+                projectList.innerHTML += `
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow-sm" data-project='${JSON.stringify(p)}'>
+
+                        <div class="card-body">
+
+                            <!-- HEADER -->
+                            <div class="d-flex justify-content-between">
+                                <h5>${p.name}</h5>
+
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">⋮</button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" onclick="editProject(${p.id}, event)">Edit</a></li>
+                                        <li><a class="dropdown-item text-danger" onclick="deleteProject(${p.id})">Delete</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <p class="text-muted">${p.description}</p>
+
+                            <small class="text-secondary d-block mb-2">
+                               Members: ${p.members ? p.members.length : 0}
+                            </small>
+
+                            <hr>
+                            
+                            <div class="d-flex mb-2">
+                            <select id="addUser-${p.id}" class="form-control me-2">
+
+                            <option value="" selected disabled>
+                                Select Member
+                            </option>
+
+                            ${
+                                allUsers
+                                .filter(u => u.role === "MEMBER" && !p.members.some(m => m.id === u.id))
+                                    .map(u => `
+                                        <option value="${u.id}">
+                                            ${u.name} (${u.email})
+                                        </option>
+                                    `).join('')
+                            }
+
+                        </select>
+                                <button class="btn btn-success"
+                                        onclick="addMember(${p.id})">
+                                    + Add
+                                </button>
+                            </div>
+                            
+                            
+
+                            <!-- TASK FORM -->
+                            <input id="title-${p.id}" class="form-control mb-1" placeholder="Task title">
+                            <input id="desc-${p.id}" class="form-control mb-1" placeholder="Description">
+
+                            <input id="date-${p.id}" type="date" class="form-control mb-1">
+
+                            <select id="priority-${p.id}" class="form-control mb-1">
+                                <option>LOW</option>
+                                <option>MEDIUM</option>
+                                <option>HIGH</option>
+                            </select>
+
+                            <!-- ✅ ONLY PROJECT MEMBERS -->
+                            <select id="user-${p.id}" class="form-control mb-2">
+
+                            ${
+                                p.members && p.members.filter(u => u.role === "MEMBER").length > 0
+                                ? `<option value="" selected disabled> Select Member</option>`
+                                : ''
+                            }
+
+                            ${
+                                p.members && p.members.length > 0
+                                ? p.members
+                                    .filter(u => u.role === "MEMBER")
+                                    .map(u => `
+                                        <option value="${u.id}">
+                                             ${u.name} - ${u.email}
+                                        </option>
+                                    `).join('')
+                                : ''
+                            }
+
+                            ${
+                                !p.members || p.members.filter(u => u.role === "MEMBER").length === 0
+                                ? `<option disabled>No members added</option>`
+                                : ''
+                            }
+
+                        </select>
+
+                            <button class="btn btn-primary w-100 mb-2"
+                                    onclick="createTask(${p.id})">
+                                + Create Task
+                            </button>
+
+                          
+                            <div id="tasks-${p.id}"></div>
+
+                        </div>
+
+                    </div>
+                </div>
+                `;
+
+                setTimeout(() => loadProjectTasks(p.id), 100);
+            });
+        });
+}
+
+
+function createProject() {
+
+    if (!projectName.value || !projectDesc.value) {
+        Swal.fire("Error", "All fields required", "error");
+        return;
+    }
+
+    fetch(BASE + "/projects", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "userId": user.id 
+        },
+        body: JSON.stringify({
+            name: projectName.value,
+            description: projectDesc.value
+        })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Project creation failed");
+        return res.json();
+    })
+    .then(() => {
+        Swal.fire("Success", "Project created", "success");
+
+        projectName.value = "";
+        projectDesc.value = "";
+
+        loadProjects();
+        loadDashboardStats();
+    })
+    .catch(err => {
+        Swal.fire("Error", err.message, "error");
+    });
+}
+
+
+function deleteProject(id) {
+
+    Swal.fire({
+        title: "Delete project?",
+        icon: "warning",
+        showCancelButton: true
+    }).then(result => {
+
+        if (result.isConfirmed) {
+        	fetch(BASE + "/projects/" + id, {
+        	    method: "DELETE",
+        	    headers: {
+        	        "userId": user.id
+        	    }
+        	}).then(() => {
+                Swal.fire("Deleted!", "", "success");
+                loadProjects();
+            });
+        }
+    });
+}
+
+function editProject(id, event) {
+
+    const card = event.target.closest(".card");
+    const project = JSON.parse(card.dataset.project);
+
+    Swal.fire({
+        title: "Edit Project",
+        html: `
+            <input id="editName" class="swal2-input" value="${project.name}">
+            <input id="editDesc" class="swal2-input" value="${project.description}">
+        `,
+        preConfirm: () => {
+            return {
+                name: document.getElementById("editName").value,
+                description: document.getElementById("editDesc").value
+            };
+        }
+    }).then(result => {
+
+        if (result.value) {
+
+            fetch(BASE + "/projects/" + id, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "userId": user.id
+                },
+                body: JSON.stringify(result.value)
+            })
+            .then(() => {
+                Swal.fire("Updated!", "", "success");
+                loadProjects();
+            });
+        }
+    });
+}
+
+function loadUsers() {
+    fetch(BASE + "/users")
+        .then(res => res.json())
+        .then(data => {
+            allUsers = data;
+        });
+}
+
+function createTask(projectId) {
+
+    const title = document.getElementById("title-" + projectId).value;
+    const desc = document.getElementById("desc-" + projectId).value;
+    const date = document.getElementById("date-" + projectId).value;
+    const priority = document.getElementById("priority-" + projectId).value;
+    const userId = document.getElementById("user-" + projectId).value;
+
+    if (!title || !date || !userId) {
+        Swal.fire("Error", "Title, date & member required", "error");
+        return;
+    }
+
+    fetch(BASE + `/tasks?projectId=${projectId}&userId=${userId}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "userId": user.id
+        },
+        body: JSON.stringify({
+            title: title,
+            description: desc,
+            dueDate: date,
+            priority: priority
+        })
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error("Task creation failed");
+        }
+        return res.json();
+    })
+    .then(() => {
+        Swal.fire("Success", "Task created", "success");
+
+        document.getElementById("title-" + projectId).value = "";
+        document.getElementById("desc-" + projectId).value = "";
+
+        loadProjectTasks(projectId);
+    })
+    .catch(err => {
+        Swal.fire("Error", err.message, "error");
+    });
+}
+
+function loadTasksPerUser() {
+	fetch(BASE + "/tasks/tasks-per-user", {
+	    headers: {
+	        "userId": user.id
+	    }
+	})
+        .then(res => res.json())
+        .then(data => {
+
+            const list = document.getElementById("tasksPerUserList");
+            list.innerHTML = "";
+
+            Object.entries(data).forEach(([email, count]) => {
+                list.innerHTML += `<li>${email} → ${count} tasks</li>`;
+            });
+        })
+        .catch(() => {
+            console.log("tasks-per-user API failed");
+        });
+}
+
+function loadProjectTasks(projectId) {
+
+	fetch(BASE + "/tasks/project/" + projectId, {
+	    headers: {
+	        "userId": user.id
+	    }
+	})
+        .then(res => res.json())
+        .then(data => {
+
+            const tasks = data;
+
+            const container = document.getElementById("tasks-" + projectId);
+
+            if (!tasks || tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-muted text-center">
+                        No tasks yet
+                    </div>
+                `;
+                return;
+            }
+
+            let html = "";
+
+            tasks.forEach(t => {
+
+                html += `
+                <div class="border rounded p-2 mb-2">
+
+                    <div class="d-flex justify-content-between">
+                        <strong>${t.title}</strong>
+
+                        <span class="badge ${
+                            t.status === 'DONE' ? 'bg-success' :
+                            t.status === 'IN_PROGRESS' ? 'bg-warning' :
+                            'bg-secondary'
+                        }">
+                            ${t.status}
+                        </span>
+                    </div>
+
+                    <small>${t.assignedTo ? t.assignedTo.name : 'N/A'}</small><br>
+                    <small>Due: ${t.dueDate || 'N/A'}</small><br>
+
+                    <small>
+                        Priority:
+                        <span class="badge ${
+                            t.priority === 'HIGH' ? 'bg-danger' :
+                            t.priority === 'MEDIUM' ? 'bg-warning' :
+                            'bg-info'
+                        }">
+                            ${t.priority}
+                        </span>
+                    </small>
+
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        })
+        .catch(() => {
+            document.getElementById("tasks-" + projectId).innerHTML =
+                `<div class="text-danger">Failed to load tasks</div>`;
+        });
+}
+
+function addMember(projectId) {
+
+    const userId = document.getElementById("addUser-" + projectId).value;
+
+    fetch(BASE + `/projects/${projectId}/add-member?userId=${userId}`, {
+        method: "POST",
+        headers: {
+            "userId": user.id
+        }
+    })
+    .then(res => res.json())
+    .then(() => {
+        Swal.fire("Success", "Member added", "success");
+
+        loadProjects();
+    })
+    .catch(() => {
+        Swal.fire("Error", "Could not add member", "error");
+    });
+}
+
+function loadDashboardStats() {
+
+	fetch(BASE + "/tasks/all", {
+	    headers: {
+	        "userId": user.id
+	    }
+	})
+        .then(res => res.json())
+        .then(tasks => {
+
+            let total = tasks.length;
+            let todo = 0;
+            let inProgress = 0;
+            let done = 0;
+
+            tasks.forEach(t => {
+                if (t.status === "TODO") todo++;
+                else if (t.status === "IN_PROGRESS") inProgress++;
+                else if (t.status === "DONE") done++;
+            });
+
+            document.getElementById("totalTasks").innerText = total;
+            document.getElementById("todoTasks").innerText = todo;
+            document.getElementById("inProgressTasks").innerText = inProgress;
+            document.getElementById("doneTasks").innerText = done;
+        });
+}
+
+
+function init() {
+
+    fetch(BASE + "/users")
+        .then(res => res.json())
+        .then(users => {
+            allUsers = users;
+        })
+        .catch(() => {
+            console.log("Users API not working, continuing...");
+        })
+        .finally(() => {
+            loadProjects();
+            loadTasksPerUser();
+            loadDashboardStats();
+            
+        });
+}
+
+init();
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -16,8 +16,8 @@ This system enables teams to collaborate, manage projects, assign tasks, and tra
 
 ### 🔐 Authentication
 
-* User Signup & Login
-* Secure password hashing using **BCrypt**
+- User Signup & Login  
+- Secure password hashing using **BCrypt**
 
 ---
 
@@ -25,55 +25,55 @@ This system enables teams to collaborate, manage projects, assign tasks, and tra
 
 #### 👑 Admin
 
-* Create projects
-* Add/remove members
-* Assign tasks
-* View all tasks and analytics
+- Create projects  
+- Add/remove members  
+- Assign tasks  
+- View all tasks and analytics  
 
 #### 👤 Member
 
-* View assigned tasks
-* Update task status
+- View assigned tasks  
+- Update task status  
 
 ---
 
 ### 📁 Project Management
 
-* Create and manage projects
-* Add members to projects
-* View project-wise tasks
+- Create and manage projects  
+- Add members to projects  
+- View project-wise tasks  
 
 ---
 
 ### ✅ Task Management
 
-* Create tasks (title, description, due date, priority)
-* Assign tasks to users
-* Update task status:
+- Create tasks (title, description, due date, priority)  
+- Assign tasks to users  
+- Update task status:
 
-  * To Do
-  * In Progress
-  * Done
+  - To Do  
+  - In Progress  
+  - Done  
 
 ---
 
 ### 📊 Dashboard
 
-* Total tasks overview
-* Tasks by status
-* Tasks per user
-* Overdue task tracking
+- Total tasks overview  
+- Tasks by status  
+- Tasks per user  
+- Overdue task tracking  
 
 ---
 
 ## 🛠 Tech Stack
 
-* **Backend:** Spring Boot (REST APIs)
-* **Database:** MySQL
-* **Frontend:** HTML, Bootstrap, JavaScript
-* **Security:** BCrypt Password Encoding
-* **Build Tool:** Maven
-* **Deployment:** Railway
+- **Backend:** Spring Boot (REST APIs)  
+- **Database:** MySQL  
+- **Frontend:** HTML, Bootstrap, JavaScript  
+- **Security:** BCrypt Password Encoding  
+- **Build Tool:** Maven  
+- **Deployment:** Railway  
 
 ---
 
@@ -84,7 +84,7 @@ This system enables teams to collaborate, manage projects, assign tasks, and tra
 ```bash
 git clone https://github.com/codewithme-u/task-manager-fullstack.git
 cd task-manager-fullstack
-```
+````
 
 ---
 
@@ -109,7 +109,6 @@ spring.jpa.show-sql=true
 mvn spring-boot:run
 ```
 
----
 
 ### 4. Access Application
 
@@ -156,4 +155,5 @@ http://localhost:8080/auth.html
 ## 👨‍💻 Author
 
 **Saksham Pokhrel**
-🔗 https://github.com/codewithme-u/task-manager-fullstack
+🔗 [https://github.com/codewithme-u/task-manager-fullstack](https://github.com/codewithme-u/task-manager-fullstack)
+

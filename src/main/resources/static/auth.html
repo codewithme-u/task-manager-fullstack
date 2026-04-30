@@ -63,78 +63,73 @@
 
 <script>
 localStorage.removeItem("user");
-const BASE = "http://localhost:8080";
 
-// ---------------- SIGNUP ----------------
 function signup() {
 
-    const nameVal = document.getElementById("name").value;
-    const emailVal = document.getElementById("email").value;
-    const passwordVal = document.getElementById("password").value;
-    const roleVal = document.getElementById("role").value;
+ const nameVal = document.getElementById("name").value;
+ const emailVal = document.getElementById("email").value;
+ const passwordVal = document.getElementById("password").value;
+ const roleVal = document.getElementById("role").value;
 
-    if (!nameVal || !emailVal || !passwordVal || !roleVal) {
-        Swal.fire("Error", "All fields are required", "error");
-        return;
-    }
+ if (!nameVal || !emailVal || !passwordVal || !roleVal) {
+     Swal.fire("Error", "All fields are required", "error");
+     return;
+ }
 
-    fetch(BASE + "/auth/signup", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            name: nameVal,
-            email: emailVal,
-            password: passwordVal,
-            role: roleVal
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.message) {
-            Swal.fire("Error", data.message, "error");
-        } else {
-            Swal.fire("Success", "Account created ", "success");
-        }
-    });
+ fetch("/auth/signup", {
+     method: "POST",
+     headers: {"Content-Type": "application/json"},
+     body: JSON.stringify({
+         name: nameVal,
+         email: emailVal,
+         password: passwordVal,
+         role: roleVal
+     })
+ })
+ .then(res => res.json())
+ .then(data => {
+     if (data.message) {
+         Swal.fire("Error", data.message, "error");
+     } else {
+         Swal.fire("Success", "Account created ", "success");
+     }
+ });
 }
 
-// ---------------- LOGIN ----------------
 function login() {
 
-    if (!loginEmail.value || !loginPassword.value) {
-        Swal.fire("Error", "Email & Password required", "error");
-        return;
-    }
+ if (!loginEmail.value || !loginPassword.value) {
+     Swal.fire("Error", "Email & Password required", "error");
+     return;
+ }
 
-    fetch(BASE + "/auth/login", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            email: loginEmail.value,
-            password: loginPassword.value
-        })
-    })
-    .then(async res => {
-        const data = await res.json();
+ fetch("/auth/login", {
+     method: "POST",
+     headers: {"Content-Type": "application/json"},
+     body: JSON.stringify({
+         email: loginEmail.value,
+         password: loginPassword.value
+     })
+ })
+ .then(async res => {
+     const data = await res.json();
 
-        if (!res.ok) {
-            Swal.fire("Error", data.message || "Login failed", "error");
-            return;
-        }
+     if (!res.ok) {
+         Swal.fire("Error", data.message || "Login failed", "error");
+         return;
+     }
 
-        localStorage.removeItem("user");
+     localStorage.setItem("user", JSON.stringify(data));
 
-        localStorage.setItem("user", JSON.stringify(data));
-
-        Swal.fire("Success", "Login successful", "success")
-        .then(() => {
-            if (data.role === "ADMIN") {
-                window.location.href = "admin.html";
-            } else {
-                window.location.href = "member.html";
-            }
-        });
-    });
+     Swal.fire("Success", "Login successful", "success")
+     .then(() => {
+         if (data.role === "ADMIN") {
+             window.location.href = "admin.html";
+         } else {
+             window.location.href = "member.html";
+         }
+     });
+ });
 }
 </script>
 

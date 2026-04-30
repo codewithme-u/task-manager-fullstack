@@ -77,7 +77,6 @@
 
 
 let allUsers = [];
-const BASE = "http://localhost:8080";
 const user = JSON.parse(localStorage.getItem("user"));
 
 if (!user || user.role !== "ADMIN") {
@@ -93,7 +92,7 @@ function logout() {
 }
 
 function loadProjects() {
-	fetch(BASE + "/projects/" + user.id)
+	fetch("/projects/" + user.id)
         .then(res => res.json())
         .then(data => {
 
@@ -222,7 +221,7 @@ function createProject() {
         return;
     }
 
-    fetch(BASE + "/projects", {
+    fetch("/projects", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -261,7 +260,7 @@ function deleteProject(id) {
     }).then(result => {
 
         if (result.isConfirmed) {
-        	fetch(BASE + "/projects/" + id, {
+        	fetch("/projects/" + id, {
         	    method: "DELETE",
         	    headers: {
         	        "userId": user.id
@@ -295,7 +294,7 @@ function editProject(id, event) {
 
         if (result.value) {
 
-            fetch(BASE + "/projects/" + id, {
+            fetch("/projects/" + id, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -312,7 +311,7 @@ function editProject(id, event) {
 }
 
 function loadUsers() {
-    fetch(BASE + "/users")
+    fetch("/users")
         .then(res => res.json())
         .then(data => {
             allUsers = data;
@@ -332,7 +331,7 @@ function createTask(projectId) {
         return;
     }
 
-    fetch(BASE + `/tasks?projectId=${projectId}&userId=${userId}`, {
+    fetch(`/tasks?projectId=${projectId}&userId=${userId}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -365,7 +364,7 @@ function createTask(projectId) {
 }
 
 function loadTasksPerUser() {
-	fetch(BASE + "/tasks/tasks-per-user", {
+	fetch("/tasks/tasks-per-user", {
 	    headers: {
 	        "userId": user.id
 	    }
@@ -387,7 +386,7 @@ function loadTasksPerUser() {
 
 function loadProjectTasks(projectId) {
 
-	fetch(BASE + "/tasks/project/" + projectId, {
+	fetch("/tasks/project/" + projectId, {
 	    headers: {
 	        "userId": user.id
 	    }
@@ -457,7 +456,7 @@ function addMember(projectId) {
 
     const userId = document.getElementById("addUser-" + projectId).value;
 
-    fetch(BASE + `/projects/${projectId}/add-member?userId=${userId}`, {
+    fetch(`/projects/${projectId}/add-member?userId=${userId}`, {
         method: "POST",
         headers: {
             "userId": user.id
@@ -476,7 +475,7 @@ function addMember(projectId) {
 
 function loadDashboardStats() {
 
-	fetch(BASE + "/tasks/all", {
+	fetch("/tasks/all", {
 	    headers: {
 	        "userId": user.id
 	    }
@@ -505,7 +504,7 @@ function loadDashboardStats() {
 
 function init() {
 
-    fetch(BASE + "/users")
+    fetch("/users")
         .then(res => res.json())
         .then(users => {
             allUsers = users;

@@ -64,7 +64,6 @@
 </div>
 
 <script>
-const BASE = "http://localhost:8080";
 const user = JSON.parse(localStorage.getItem("user"));
 
 if (!user || user.role !== "MEMBER") {
@@ -79,7 +78,7 @@ function logout() {
 }
 
 function loadTasks() {
-	fetch(BASE + "/tasks/user/" + user.id, {
+	fetch("/tasks/user/" + user.id, {
 	    headers: {
 	        "userId": user.id
 	    }
@@ -187,7 +186,7 @@ function loadTasks() {
 
 function updateStatus(taskId, status) {
 
-	fetch(BASE + "/tasks/" + taskId + "?status=" + status, {
+	fetch("/tasks/" + taskId + "?status=" + status, {
 	    method: "PUT",
 	    headers: {
 	        "userId": user.id
